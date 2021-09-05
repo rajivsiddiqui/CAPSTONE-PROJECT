@@ -1,0 +1,169 @@
+version: 2.1
+orbs:
+  aws-cli: circleci/aws-cli@2.0.3
+  kubernetes: circleci/kubernetes@0.12.0
+  aws-eks: circleci/aws-eks@0.2.3
+  
+# createING THE CODE USING PYLINT
+# USING DOCKER IMAGE PYTHON3.7.3-stretch  
+# 1. SETTING UP THE VIRTUAL ENVIRONMENT AND ACTIVATING IT 
+# 2. INSTALLING THE PACKAGES -FLASK AND PLINT
+# 3. USING make lint COMMAND WE'RE  createING THE CODE HERE
+# 4. TIMEOUT REQUIRED 30M TO AVOID FAILURE  
+# 5. DOCKER IMAGE NEEDS TO CONFIGURE USING THE DOCKER FILE AVAILABLE IN THE FOLDER
+# 6. LOGIN TO OUR DOCKER ACCOUNT
+# 7. BUILDING THE DOCKER IMAGE NAMED "project6:2.0" DOT (.) IS PRESENT DIRECTORY 
+# 8. CREATING DOCKER CONTAINER
+######### --rm - TO REMOVE THE IMAGE AFTER THE CONTAINER CREATION
+######### -d - TO RUN THE CONTAINER IN DETACHED MODE
+######### --name - NAME OF THE CONTAINER 
+######### -p - TO EXPOSE PORT (HOST PORT:CONTAINER PORT)
+# 9. CHECKING CONTAINER IS WORKING WITH EXPECTED BEHAVIOUR.
+# 10. ONCE THE CONTAINER STOPPED , WE NEED TO PUSH THE IMAGE TO OUT REPOSITORY
+# 11. CREATE AWS EKS KUBERNETES CLIUSTER 
+# 12. CREATE DEPLOYMENT CONFIR USING deployment.yml
+jobs:
+  lint:
+    docker:
+      - image: circleci/python:3.7.3-stretch
+    steps:
+      - checkout
+      - run:
+          name: install dependencies
+          command: |
+            python3 -m venv devops
+            source devops/bin/activate
+            make install
+            
+      - run:
+          name: run lint
+          command: |
+            source devops/bin/activate
+            make lint
+  
+          no_output_timeout: 30m 
+          
+  configure-image:
+    machine: true
+    working_directory: ~/app
+    steps:
+      - checkout
+      - run:
+          name: Build, Test and Upload docker image
+          command: |
+            docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PWD}
+            docker build -t dockerbeginnersiva/project6:2.0 .
+            docker run -d --rm --name flaskapp -p 8081:8080 dockerbeginnersiva/project6:2.0
+            sleep 5
+            docker container ls
+            export URL="http://localhost:8081"
+            export response=$(curl -s $URL)
+            echo "This is response $response"
+            if [[ $response == *"siva Kumar"* ]]; then
+              docker stop flaskapp
+            else
+              docker stop flaskapp
+              exit 1
+            fi
+            docker push dockerbeginnersiva/project6:2.0
+            
+  test-cluster:
+    executor: aws-eks/python3
+    pasivaeters:
+      cluster-name:
+        description: |
+          Name of the EKS cluster
+        type: string
+    steps:
+      - kubernetes/install
+      - aws-eks/update-kubeconfig-with-authenticator:
+          cluster-name: << pasivaeters.cluster-name >>
+      - run:
+          name: Kube cluster
+          command: |
+            kubectl get services
+            
+            
+  create-deployment:
+    executor: aws-eks/python3
+    pasivaeters:
+      cluster-name:
+        description: |
+          Name of the EKS cluster
+        type: string
+    steps:
+      - checkout
+      - aws-eks/update-kubeconfig-with-authenticator:
+          cluster-name: << pasivaeters.cluster-name >>
+          install-kubectl: true
+      - kubernetes/create-or-update-resource:
+          get-rollout-status: true
+          resource-file-path: deployment.yml
+          resource-name: deployment/siva-capstone-deployment
+          
+          
+  test-deployment:
+    executor: aws-eks/python3
+    pasivaeters:
+      cluster-name:
+        description: |
+          Name of the EKS cluster
+        type: string
+    steps:
+      - kubernetes/install
+      - aws-eks/update-kubeconfig-with-authenticator:
+          cluster-name: << pasivaeters.cluster-name >>
+      - run:
+          name: Kube cluster
+          command: |
+            kubectl get svc
+            kubectl get nodes
+            kubectl get deployment
+            kubectl get pods
+            
+          
+          
+            
+          
+workflows:
+  default:
+    jobs:
+      - lint
+      - configure-image:
+          requires:
+            - lint
+      - aws-eks/create-cluster:
+          cluster-name: siva-capstone
+          requires:
+            - configure-image
+      - test-cluster:
+          cluster-name: siva-capstone
+          requires:
+            - aws-eks/create-cluster
+#      - test-cluster:
+#          cluster-name: siva-capstone
+#          requires:
+#           - configure-image
+      - create-deployment:
+            cluster-name: siva-capstone
+            requires:
+              - test-cluster
+      - test-deployment:
+          cluster-name: siva-capstone
+          requires:
+            - create-deployment              
+      - aws-eks/update-container-image:
+          cluster-name: siva-capstone
+          container-image-updates: 'siva-capstone-deployment=dockerbeginnersiva/project6:2.0'
+          get-rollout-status: true
+          record: true
+          requires:
+           - test-deployment
+          resource-name: deployment/siva-capstone-deployment        
+          
+            
+            
+#      - aws-eks/delete-cluster:
+#          cluster-name: siva-capstone
+#          requires:
+#           - aws-eks/update-container-image
