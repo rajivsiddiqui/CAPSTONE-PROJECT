@@ -141,7 +141,7 @@ workflows:
       - aws-eks/create-cluster:
           cluster-name: siva-capstone
           requires:
-            - configure-image
+            - install-eks
       - test-cluster:
           cluster-name: siva-capstone
           requires:
