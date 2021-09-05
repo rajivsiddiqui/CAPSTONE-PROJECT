@@ -110,7 +110,7 @@ jobs:
             kubectl get pods
             kubectl get deployment
 workflows:
-  deployment:
+  default:
     jobs:
       - install-eks
       - lint
