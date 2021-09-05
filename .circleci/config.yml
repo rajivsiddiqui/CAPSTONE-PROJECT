@@ -39,7 +39,7 @@ jobs:
       - run:
           name: build and push tag
           command: |
-            docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
+            docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PWD}
             docker build -t dockerbeginnersiva/capstoneproject-${CIRCLE_WORKFLOW_ID} .
             docker push dockerbeginnersiva/capstoneproject-${CIRCLE_WORKFLOW_ID}
             docker tag dockerbeginnersiva/capstoneproject-${CIRCLE_WORKFLOW_ID} dockerbeginnersiva/capstoneproject:latest
