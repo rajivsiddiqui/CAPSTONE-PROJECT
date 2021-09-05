@@ -1,55 +1,49 @@
 version: 2.1
+
 orbs:
-  aws-cli: circleci/aws-cli@2.0.3
-  kubernetes: circleci/kubernetes@0.12.0
   aws-eks: circleci/aws-eks@0.2.3
-  
-  
-jobs:
-  lint:
+  kubernetes: circleci/kubernetes@0.4.0
+
+executors:
+  python:
     docker:
       - image: circleci/python:3.7.3-stretch
+  aws:
+    docker:
+      - image: amazon/aws-cli
+
+jobs:
+  lint:
+    executor: python
     steps:
       - checkout
       - run:
           name: install dependencies
           command: |
-            python3 -m venv devops
-            source devops/bin/activate
+            python3 -m venv venv
+            . venv/bin/activate
             make install
-            
+            sudo wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64 &&\
+            sudo chmod +x /bin/hadolint
       - run:
           name: run lint
           command: |
-            source devops/bin/activate
+            . venv/bin/activate
             make lint
-  
-          no_output_timeout: 30m 
-          
-  configure-image:
+  build:
     machine: true
-    working_directory: ~/app
+    working_directory: ~/project
+
     steps:
       - checkout
       - run:
-          name: Build, Test and Upload docker image
+          name: build and push tag
           command: |
-            docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PWD}
-            docker build -t dockerbeginnersiva/project6:2.0 .
-            docker run -d --rm --name flaskapp -p 8081:8080 dockerbeginnersiva/project6:2.0
-            sleep 5
-            docker container ls
-            export URL="http://localhost:8081"
-            export response=$(curl -s $URL)
-            echo "This is response $response"
-            if [[ $response == *"Sivakumar"* ]]; then
-              docker stop flaskapp
-            else
-              docker stop flaskapp
-              exit 1
-            fi
-            docker push dockerbeginnersiva/project6:2.0
-            
+            docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
+            docker build -t dockerbeginnersiva/capstoneproject-${CIRCLE_WORKFLOW_ID} .
+            docker push dockerbeginnersiva/capstoneproject-${CIRCLE_WORKFLOW_ID}
+            docker tag dockerbeginnersiva/capstoneproject-${CIRCLE_WORKFLOW_ID} dockerbeginnersiva/capstoneproject:latest
+            docker push dockerbeginnersiva/capstoneproject:latest
   install-eks:
     machine: true
     steps:
@@ -71,14 +65,12 @@ jobs:
             fi
             $SUDO mv eksctl_download/eksctl /usr/local/bin/
             rmdir eksctl_download
-
-            
   create-deployment:
     executor: aws-eks/python3
     parameters:
       cluster-name:
         description: |
-          siva-capstone-deployment 
+          capstoneproject
         type: string
     steps:
       - checkout
@@ -89,14 +81,14 @@ jobs:
       - kubernetes/create-or-update-resource:
           get-rollout-status: true
           resource-file-path: deployment.yaml
-          resource-name: deployment/siva-capstone-deployment 
+          resource-name: deployment/capstoneproject
 
   test-cluster:
     executor: aws-eks/python3
     parameters:
       cluster-name:
         description: |
-          siva-capstone-deployment 
+          capstoneproject
         type: string
     steps:
       - aws-eks/update-kubeconfig-with-authenticator:
@@ -110,7 +102,7 @@ jobs:
             kubectl get pods
             kubectl get deployment
 workflows:
-  default:
+  deployment:
     jobs:
       - install-eks
       - lint
@@ -118,18 +110,18 @@ workflows:
           requires:
             - lint
       - aws-eks/create-cluster:
-          cluster-name: siva-capstone-deployment 
+          cluster-name: capstoneproject
           requires:
             - install-eks
       - create-deployment:
-          cluster-name: siva-capstone-deployment 
+          cluster-name: capstoneproject
           requires:
             - aws-eks/create-cluster
       - test-cluster:
-          cluster-name: siva-capstone-deployment 
+          cluster-name: capstoneproject
           requires:
             - aws-eks/create-cluster
       - aws-eks/delete-cluster:
-          cluster-name: siva-capstone-deployment 
+          cluster-name: capstoneproject
           requires:
             - test-cluster
