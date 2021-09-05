@@ -1,28 +1,10 @@
 version: 2.1
 orbs:
   aws-cli: circleci/aws-cli@2.0.3
+  kubernetes: circleci/kubernetes@0.12.0
   aws-eks: circleci/aws-eks@0.2.3
-  kubernetes: circleci/kubernetes@0.4.0
   
   
-# createING THE CODE USING PYLINT
-# USING DOCKER IMAGE PYTHON3.7.3-stretch  
-# 1. SETTING UP THE VIRTUAL ENVIRONMENT AND ACTIVATING IT 
-# 2. INSTALLING THE PACKAGES -FLASK AND PLINT
-# 3. USING make lint COMMAND WE'RE  createING THE CODE HERE
-# 4. TIMEOUT REQUIRED 30M TO AVOID FAILURE  
-# 5. DOCKER IMAGE NEEDS TO CONFIGURE USING THE DOCKER FILE AVAILABLE IN THE FOLDER
-# 6. LOGIN TO OUR DOCKER ACCOUNT
-# 7. BUILDING THE DOCKER IMAGE NAMED "project6:2.0" DOT (.) IS PRESENT DIRECTORY 
-# 8. CREATING DOCKER CONTAINER
-######### --rm - TO REMOVE THE IMAGE AFTER THE CONTAINER CREATION
-######### -d - TO RUN THE CONTAINER IN DETACHED MODE
-######### --name - NAME OF THE CONTAINER 
-######### -p - TO EXPOSE PORT (HOST PORT:CONTAINER PORT)
-# 9. CHECKING CONTAINER IS WORKING WITH EXPECTED BEHAVIOUR.
-# 10. ONCE THE CONTAINER STOPPED , WE NEED TO PUSH THE IMAGgE TO OUT REPOSITORY
-# 11. CREATE AWS EKS KUBERNETES CLIUSTER 
-# 12. CREATE DEPLOYMENT CONFIR USING deployment.yml
 jobs:
   lint:
     docker:
@@ -53,20 +35,20 @@ jobs:
           name: Build, Test and Upload docker image
           command: |
             docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PWD}
-            docker build -t dockerbeginnersiva/project6:2.0 .
-            docker run -d --rm --name flaskapp -p 8081:8080 dockerbeginnersiva/project6:2.0
+            docker build -t dockerbeginner/project6:2.0 .
+            docker run -d --rm --name flaskapp -p 8081:8080 dockerbeginner/project6:2.0
             sleep 5
             docker container ls
             export URL="http://localhost:8081"
             export response=$(curl -s $URL)
             echo "This is response $response"
-            if [[ $response == *"Sivakumar"* ]]; then
+            if [[ $response == *"siva Kumar"* ]]; then
               docker stop flaskapp
             else
               docker stop flaskapp
               exit 1
             fi
-            docker push dockerbeginnersiva/project6:2.0
+            docker push dockerbeginner/project6:2.0
             
   test-cluster:
     executor: aws-eks/python3
@@ -155,7 +137,7 @@ workflows:
             - create-deployment              
       - aws-eks/update-container-image:
           cluster-name: siva-capstone
-          container-image-updates: 'siva-capstone-deployment=dockerbeginnersiva/project6:2.0'
+          container-image-updates: 'siva-capstone-deployment=dockerbeginner/project6:2.0'
           get-rollout-status: true
           record: true
           requires:
@@ -164,7 +146,7 @@ workflows:
           
             
             
-#      - aws-eks/delete-cluster:
-#          cluster-name: siva-capstone
-#          requires:
-#           - aws-eks/update-container-image
+      - aws-eks/delete-cluster:
+          cluster-name: siva-capstone
+          requires:
+           - aws-eks/update-container-image
