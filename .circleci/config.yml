@@ -42,7 +42,7 @@ jobs:
             export URL="http://localhost:8081"
             export response=$(curl -s $URL)
             echo "This is response $response"
-            if [[ $response == *"siva Kumar"* ]]; then
+            if [[ $response == *"Sivakumar"* ]]; then
               docker stop flaskapp
             else
               docker stop flaskapp
