@@ -35,7 +35,7 @@ jobs:
           name: Build, Test and Upload docker image
           command: |
             docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PWD}
-            docker build -t dockerbeginner/project6:2.0 .
+            docker build -t dockerbeginnersiva/project6:2.0 .
             docker run -d --rm --name flaskapp -p 8081:8080 dockerbeginner/project6:2.0
             sleep 5
             docker container ls
@@ -48,7 +48,7 @@ jobs:
               docker stop flaskapp
               exit 1
             fi
-            docker push dockerbeginner/project6:2.0
+            docker push dockerbeginnersiva/project6:2.0
             
   test-cluster:
     executor: aws-eks/python3
