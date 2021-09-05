@@ -158,7 +158,7 @@ workflows:
           get-rollout-status: true
           record: true
           requires:
-           - test-deployment
+            - test-deployment
           resource-name: deployment/siva-capstone-deployment        
           
             
