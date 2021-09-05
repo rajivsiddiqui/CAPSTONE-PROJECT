@@ -72,104 +72,64 @@ jobs:
             $SUDO mv eksctl_download/eksctl /usr/local/bin/
             rmdir eksctl_download
 
-  test-cluster:
-    executor: aws-eks/python3
-    parameters:
-      cluster-name:
-        description: |
-          Name of the EKS cluster
-        type: string
-    steps:
-      - kubernetes/install
-      - aws-eks/update-kubeconfig-with-authenticator:
-          cluster-name: << parameters.cluster-name >>
-      - run:
-          name: Kube cluster
-          command: |
-            kubectl get services
-            
             
   create-deployment:
     executor: aws-eks/python3
     parameters:
       cluster-name:
         description: |
-          Name of the EKS cluster
+          siva-capstone-deployment 
         type: string
     steps:
       - checkout
+      - kubernetes/install
       - aws-eks/update-kubeconfig-with-authenticator:
           cluster-name: << parameters.cluster-name >>
           install-kubectl: true
       - kubernetes/create-or-update-resource:
           get-rollout-status: true
-          resource-file-path: deployment.yml
-          resource-name: deployment/siva-capstone-deployment
-          
-          
-  test-deployment:
+          resource-file-path: deployment.yaml
+          resource-name: deployment/siva-capstone-deployment 
+
+  test-cluster:
     executor: aws-eks/python3
     parameters:
       cluster-name:
         description: |
-          Name of the EKS cluster
+          siva-capstone-deployment 
         type: string
     steps:
-      - kubernetes/install
       - aws-eks/update-kubeconfig-with-authenticator:
           cluster-name: << parameters.cluster-name >>
       - run:
-          name: Kube cluster
+          name: Test cluster
           command: |
+            kubectl get services
             kubectl get svc
-            kubectl get nodes
-            kubectl get deployment
+            kubectl get nodes -o wide
             kubectl get pods
-            
-          
-          
-            
-          
+            kubectl get deployment
 workflows:
-  default:
+  deployment:
     jobs:
       - install-eks
       - lint
-      - configure-image:
+      - build:
           requires:
             - lint
       - aws-eks/create-cluster:
-          cluster-name: siva-capstone
+          cluster-name: siva-capstone-deployment 
           requires:
             - install-eks
-      - test-cluster:
-          cluster-name: siva-capstone
+      - create-deployment:
+          cluster-name: siva-capstone-deployment 
           requires:
             - aws-eks/create-cluster
-#      - test-cluster:
-#          cluster-name: siva-capstone
-#          requires:
- #           - configure-image
-      - create-deployment:
-            cluster-name: siva-capstone
-            requires:
-              - test-cluster
-      - test-deployment:
-          cluster-name: siva-capstone
+      - test-cluster:
+          cluster-name: siva-capstone-deployment 
           requires:
-            - create-deployment              
-      - aws-eks/update-container-image:
-          cluster-name: siva-capstone
-          container-image-updates: 'siva-capstone-deployment=dockerbeginnersiva/project6:2.0'
-          get-rollout-status: true
-          record: true
-          requires:
-           - test-deployment
-          resource-name: deployment/siva-capstone-deployment        
-          
-            
-            
+            - aws-eks/create-cluster
       - aws-eks/delete-cluster:
-          cluster-name: siva-capstone
+          cluster-name: siva-capstone-deployment 
           requires:
-           - aws-eks/update-container-image
+            - test-cluster
