@@ -71,7 +71,7 @@ jobs:
             fi
             $SUDO mv eksctl_download/eksctl /usr/local/bin/
             rmdir eksctl_download
-                      
+
   test-cluster:
     executor: aws-eks/python3
     parameters:
@@ -133,6 +133,7 @@ jobs:
 workflows:
   default:
     jobs:
+      - install-eks
       - lint
       - configure-image:
           requires:
