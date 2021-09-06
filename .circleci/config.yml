@@ -122,14 +122,11 @@ workflows:
           cluster-name: siva-capstone
           requires:
             - aws-eks/create-cluster
-      - test-cluster:
+      
+      - create-deployment:
           cluster-name: siva-capstone
           requires:
-            - configure-image
-      - create-deployment:
-            cluster-name: siva-capstone
-            requires:
-              - test-cluster
+            - test-cluster
       - test-deployment:
           cluster-name: siva-capstone
           requires:
