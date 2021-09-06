@@ -149,14 +149,14 @@ workflows:
       - configure-image:
           requires:
             - lint
-      - aws-eks/create-small-cluster:
+      - create-small-cluster:
           cluster-name: siva-capstone
           requires:
             - configure-image
       - test-cluster:
           cluster-name: siva-capstone
           requires:
-            - aws-eks/create-small-cluster
+            - create-small-cluster
       
       - create-deployment:
           cluster-name: siva-capstone
