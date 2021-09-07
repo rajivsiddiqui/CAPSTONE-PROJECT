@@ -18,12 +18,12 @@ spec:
   template:
     metadata:
       labels:
-        app: sivaks-capstone-deployment
+        app: siva-capstone-deployment
     spec:
       containers:
         - image: dockerbeginnersiva/project6:2.0
           imagePullPolicy: Always
-          name: sivaks-capstone-deployment
+          name: siva-capstone-deployment
           ports:
             - containerPort: 8080
 
@@ -31,9 +31,9 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: sivaks-capstone-deployment
+  name: siva-capstone-deployment
   labels:
-    app: sivaks-capstone-deployment
+    app: siva-capstone-deployment
 spec:
   type: LoadBalancer
   selector:
