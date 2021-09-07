@@ -57,7 +57,6 @@ jobs:
           name: run lint
           command: |
             source devops/bin/activate
-            hadolint
             make lint
   
           no_output_timeout: 30m 
