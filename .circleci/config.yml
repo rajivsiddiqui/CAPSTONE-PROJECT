@@ -57,6 +57,7 @@ jobs:
           name: run lint
           command: |
             source devops/bin/activate
+            hadolint
             make lint
   
           no_output_timeout: 30m 
@@ -109,7 +110,7 @@ jobs:
         description: |
           Name of the EKS cluster
         type: string
-        
+
     steps:
       - checkout
       - aws-eks/update-kubeconfig-with-authenticator:
