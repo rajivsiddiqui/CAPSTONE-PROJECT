@@ -71,7 +71,7 @@ jobs:
           command: |
             docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PWD}
             docker build -t dockerbeginnersiva/project6:latest .
-            docker run -d --rm --name testapp -p 8081:8080 dockerbeginnersiva/project6:latest
+            docker run -d --rm --name testapp -p 8081:8080 dockerbeginnersiva/project6.0:latest
             sleep 5
             docker container ls
             export URL="http://localhost:8081"
@@ -83,7 +83,7 @@ jobs:
               docker stop testapp
               exit 1
             fi
-            docker push dockerbeginnersiva/project6:latest
+            docker push dockerbeginnersiva/project6.0:latest
             
   test-cluster:
     executor: aws-eks/python3
@@ -118,7 +118,7 @@ jobs:
       - kubernetes/create-or-update-resource:
           get-rollout-status: true
           resource-file-path: deployment.yml
-          resource-name: deployment/siva-capstone-capstone-deployment
+          resource-name: deployment/siva-capstone-deployment
           
           
   test-deployment:
@@ -148,34 +148,34 @@ workflows:
           requires:
             - lint
       - create-small-cluster:
-          cluster-name: siva-capstone-capstone
+          cluster-name: siva-capstone
           requires:
             - configure-image
       - test-cluster:
-          cluster-name: siva-capstone-capstone
+          cluster-name: siva-capstone
           requires:
             - create-small-cluster
       
       - create-deployment:
-          cluster-name: siva-capstone-capstone
+          cluster-name: siva-capstone
           requires:
             - test-cluster
       - test-deployment:
-          cluster-name: siva-capstone-capstone
+          cluster-name: siva-capstone
           requires:
             - create-deployment              
       - aws-eks/update-container-image:
           cluster-name: siva-capstone-capstone
-          container-image-updates: 'siva-capstone-capstone-deployment=dockerbeginnersiva/project6:latest'
+          container-image-updates: 'siva-capstone-deployment=dockerbeginnersiva/project6.0:latest'
           get-rollout-status: true
           record: true
           requires:
            - test-deployment
-          resource-name: deployment/siva-capstone-capstone-deployment        
+          resource-name: deployment/siva-capstone-deployment        
           
             
             
 #      - aws-eks/delete-cluster:
-#          cluster-name: siva-capstone-capstone
+#          cluster-name: siva-capstone
 #          requires:
 #            - aws-eks/update-container-image
