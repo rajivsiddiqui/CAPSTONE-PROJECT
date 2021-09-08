@@ -71,7 +71,7 @@ jobs:
           command: |
             docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PWD}
             docker build -t dockerbeginnersiva/project6:latest .
-            docker run -d --rm --name testapp -p 8081:8080 dockerbeginnersiva/project6.0:latest
+            docker run -d --rm --name testapp -p 8081:8080 dockerbeginnersiva/project6:latest
             sleep 5
             docker container ls
             export URL="http://localhost:8081"
@@ -83,7 +83,7 @@ jobs:
               docker stop testapp
               exit 1
             fi
-            docker push dockerbeginnersiva/project6.0:latest
+            docker push dockerbeginnersiva/project6:latest
             
   test-cluster:
     executor: aws-eks/python3
@@ -166,7 +166,7 @@ workflows:
             - create-deployment              
       - aws-eks/update-container-image:
           cluster-name: siva-capstone-capstone
-          container-image-updates: 'siva-capstone-deployment=dockerbeginnersiva/project6.0:latest'
+          container-image-updates: 'siva-capstone-deployment=dockerbeginnersiva/project6:latest'
           get-rollout-status: true
           record: true
           requires:
