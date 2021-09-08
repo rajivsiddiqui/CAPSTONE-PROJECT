@@ -162,8 +162,8 @@ workflows:
 #            - test-cluster
       - test-deployment:
           cluster-name: siva-capstone
-          requires:
-            - create-deployment              
+#          requires:
+#            - create-deployment              
       - aws-eks/update-container-image:
           cluster-name: siva-capstone
           container-image-updates: 'siva-capstone-deployment=dockerbeginnersiva/project6:latest'
