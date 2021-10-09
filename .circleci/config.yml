@@ -77,7 +77,7 @@ jobs:
             export URL="http://localhost:8081"
             export response=$(curl -s $URL)
             echo "This is response $response"
-            if [[ $response == *"Sivakumar"* ]]; then
+            if [[ $response == *"rajiv"* ]]; then
               docker stop testapp
             else
               docker stop testapp
