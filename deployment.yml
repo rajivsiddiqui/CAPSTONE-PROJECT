@@ -1,15 +1,15 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: siva-capstone-deployment
+  name: rajiv-capstone-deployment
   labels:
-    app: siva-capstone-deployment
+    app: rajiv-capstone-deployment
   namespace: default
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: siva-capstone-deployment
+      app: rajiv-capstone-deployment
   strategy:
     rollingUpdate:
       maxSurge: 50%
@@ -18,12 +18,12 @@ spec:
   template:
     metadata:
       labels:
-        app: siva-capstone-deployment
+        app: rajiv-capstone-deployment
     spec:
       containers:
-        - image: dockerbeginnersiva/project6:4.0
+        - image: rajivsiddiqui/project6:1.0
           imagePullPolicy: Always
-          name: siva-capstone-deployment
+          name: rajiv-capstone-deployment
           ports:
             - containerPort: 8080
 
@@ -31,13 +31,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: siva-capstone-deployment
+  name: rajiv-capstone-deployment
   labels:
-    app: siva-capstone-deployment
+    app: rajiv-capstone-deployment
 spec:
   type: LoadBalancer
   selector:
-    app: siva-capstone-deployment
+    app: rajiv-capstone-deployment
   ports:
     - port: 8080
       targetPort: 8080
