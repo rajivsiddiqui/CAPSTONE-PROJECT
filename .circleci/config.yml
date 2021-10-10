@@ -153,13 +153,13 @@ workflows:
             - configure-image
       - test-cluster:
           cluster-name: rajiv-capstone
-           requires:
+          requires:
             - create-small-cluster
       
       - create-deployment:
           cluster-name: rajiv-capstone
-           requires:
-             - test-cluster
+          requires:
+            - test-cluster
       - test-deployment:
           cluster-name: rajiv-capstone
           requires:
