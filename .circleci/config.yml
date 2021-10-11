@@ -153,29 +153,29 @@ workflows:
       #      - configure-image
       - test-cluster:
           cluster-name: rajiv-capstone
-      #   requires:
-      #     - create-small-cluster
+      #    requires:
+      #      - create-small-cluster
       
-       - create-deployment:
-           cluster-name: rajiv-capstone
+      - create-deployment:
+          cluster-name: rajiv-capstone
       #    requires:
       #      - test-cluster
-       - test-deployment:
-           cluster-name: rajiv-capstone
-           requires:
-             - create-deployment              
-       - aws-eks/update-container-image:
-           cluster-name: rajiv-capstone
-           container-image-updates: 'rajiv-capstone-deployment=rajivsiddiqui/project6:1.0'
-           get-rollout-status: true
-           record: true
-           requires:
-            - test-deployment
-           resource-name: deployment/rajiv-capstone-deployment        
+      - test-deployment:
+          cluster-name: rajiv-capstone
+          requires:
+            - create-deployment              
+      - aws-eks/update-container-image:
+          cluster-name: rajiv-capstone
+          container-image-updates: 'rajiv-capstone-deployment=rajivsiddiqui/project6:1.0'
+          get-rollout-status: true
+          record: true
+          requires:
+           - test-deployment
+          resource-name: deployment/rajiv-capstone-deployment        
           
             
             
-  #    - aws-eks/delete-cluster:
-  #        cluster-name: rajiv-capstone
-  #        requires:
-  #         - aws-eks/update-container-image
+#      - aws-eks/delete-cluster:
+#          cluster-name: rajiv-capstone
+#          requires:
+#            - aws-eks/update-container-image
