@@ -175,7 +175,7 @@ workflows:
           
             
             
-#      - aws-eks/delete-cluster:
-#          cluster-name: rajiv-capstone
-#          requires:
-#            - aws-eks/update-container-image
+      - aws-eks/delete-cluster:
+          cluster-name: rajiv-capstone
+          requires:
+           - aws-eks/update-container-image
