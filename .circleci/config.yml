@@ -147,19 +147,19 @@ workflows:
       - configure-image:
           requires:
             - lint
-      #- create-small-cluster:
-      #    cluster-name: rajiv-capstone
-      #    requires:
-      #      - configure-image
+      - create-small-cluster:
+          cluster-name: rajiv-capstone
+          requires:
+            - configure-image
       - test-cluster:
           cluster-name: rajiv-capstone
-      #    requires:
-      #      - create-small-cluster
+          requires:
+            - create-small-cluster
       
       - create-deployment:
           cluster-name: rajiv-capstone
-      #    requires:
-      #      - test-cluster
+          requires:
+            - test-cluster
       - test-deployment:
           cluster-name: rajiv-capstone
           requires:
